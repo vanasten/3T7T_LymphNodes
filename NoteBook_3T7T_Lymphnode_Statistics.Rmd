@@ -1,0 +1,60 @@
+---
+title: "3T7T_Lymphnode_Statistics"
+author: "Jack van Asten"
+date: "April 7, 2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document.
+
+## Read data from csv and calculate volumes
+```{r, echo=FALSE}
+   library(readr)
+   Pat0_lymphnodes <- read_csv("~/BIOMR_CACHE/Pat0_lymphnodes.csv")
+   # 4/3*PI*a*b*c*1/8 (radius; abc are diameters)
+   Pt0_Volumes <- 1/6*pi*Pat0_lymphnodes[1]*Pat0_lymphnodes[2]*Pat0_lymphnodes[3]
+```
+
+```{r}
+   summary(Pat0_lymphnodes)
+   summary(Pt0_Volumes)
+```
+
+## Including Plots
+Boxplots of the lymphnode sizes:
+```{r pressure, echo=FALSE}
+   library(ggplot2)
+   boxplot(Pt0_Volumes,col="light blue")
+   boxplot(Pat0_lymphnodes,col="light blue")
+   #plot(pressure)
+```
+
+## Including Histogram
+Histogram of the lymphnode sizes:
+```{r, echo=FALSE}
+   library(ggplot2)
+   # for histogram or (bar)plot, make row out of column first
+   LNsize <- data.frame(t(Pt0_Volumes))
+   #?tibble::rownames_to_column(LNsize, var="LN_sizes")
+   x <- (1:length(LNsize))
+
+   hist(as.numeric(LNsize),breaks=15,xlab="lymph node size in mm^3",ylab="frequency",main="Scored nodes Pat0",col="light green")
+
+   plot(x,LNsize,type="l",col="blue")
+   #ggplot(LNsize,aes(x = "size mm^3",y=t.LNsize.)) + stat_identity(geom = "bar")
+   ggplot(LNsize,aes(LNsize))
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+See: https://www.datanovia.com/en/lessons/cohens-kappa-in-r-for-two-categorical-variables/#kappa-for-two-categorical-variables-with-multiple-levels for an extended description of calculating kappa for 2 readers with multiple levels.
+
+
