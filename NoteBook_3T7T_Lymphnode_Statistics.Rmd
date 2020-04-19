@@ -18,7 +18,9 @@ When you click the **Knit** button a document will be generated that includes bo
 ## Read data from csv and calculate volumes
 ```{r, echo=FALSE}
    library(readr)
-   Pat0_lymphnodes <- read_csv("~/BIOMR_CACHE/Pat0_lymphnodes.csv")
+   #Pat0_lymphnodes <- read_csv("~/BIOMR_CACHE/Pat0_lymphnodes.csv")
+   Pat0LNs <- file.choose()
+   LNs <- read_csv(Pat0LNs)
    # 4/3*PI*a*b*c*1/8 (radius; abc are diameters)
    Pt0_Volumes <- 1/6*pi*Pat0_lymphnodes[1]*Pat0_lymphnodes[2]*Pat0_lymphnodes[3]
 ```
