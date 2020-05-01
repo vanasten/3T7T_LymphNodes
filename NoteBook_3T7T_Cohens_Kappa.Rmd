@@ -1,0 +1,53 @@
+---
+title: "3T7T_Lymphnode_Statistics"
+author: "Jack van Asten"
+date: "1-5-2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+## This document reads data of LNs read by two readers and calculates cohen's kappa. The data goes into a contigency matrix and the kappa will be dichotomised over 4 levels of suspicious LNs.
+
+```{r, echo=false}
+
+library("vcd", "vcdExtra")
+suspiciousLNs <- as.table(
+  rbind(
+    c(0,1,0,0),
+    c(1,0,1,0),
+    c(2,2,1,1),
+    c(0,2,1,6)
+  )
+)
+
+dimnames(suspiciousLNs) <- list(
+  RA = c("LoS2", "LoS3", "LoS4", "LoS5"),
+  RT = c("LoS2", "LoS3", "LoS4", "LoS5")
+)
+
+suspiciousLNs
+
+result.k <- Kappa(suspiciousLNs, weights = "Fleiss-Cohen")
+
+summary(result.k)
+# ASE = Asymptotic Standard Error
+
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
