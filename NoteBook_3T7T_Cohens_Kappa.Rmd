@@ -21,16 +21,17 @@ When you click the **Knit** button a document will be generated that includes bo
 library("vcd", "vcdExtra")
 suspiciousLNs <- as.table(
   rbind(
-    c(0,1,0,0),
-    c(1,0,1,0),
-    c(2,2,1,1),
-    c(0,2,1,6)
+    c(0,0,0,0,0),
+    c(0,0,1,0,0),
+    c(0,1,0,1,0),
+    c(0,2,2,1,1),
+    c(0,0,2,1,6)
   )
 )
 
 dimnames(suspiciousLNs) <- list(
-  RA = c("LoS2", "LoS3", "LoS4", "LoS5"),
-  RT = c("LoS2", "LoS3", "LoS4", "LoS5")
+  RA = c("LoS1","LoS2","LoS3","LoS4","LoS5"),
+  RT = c("LoS1","LoS2","LoS3","LoS4","LoS5")
 )
 
 suspiciousLNs
