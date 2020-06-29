@@ -17,8 +17,8 @@ When you click the **Knit** button a document will be generated that includes bo
 ## This document reads data of LNs read by two readers and calculates cohen's kappa. The data goes into a contigency matrix and the kappa will be dichotomised over 4 levels of suspicious LNs.
 
 ```{r, echo=false}
-
 library("vcd", "vcdExtra")
+#pt3, 3T
 suspiciousLNs <- as.table(
   rbind(
     c(0,0,0,0,0),
@@ -28,7 +28,6 @@ suspiciousLNs <- as.table(
     c(0,0,2,1,6)
   )
 )
-
 dimnames(suspiciousLNs) <- list(
   RA = c("LoS1","LoS2","LoS3","LoS4","LoS5"),
   RT = c("LoS1","LoS2","LoS3","LoS4","LoS5")
@@ -37,6 +36,71 @@ dimnames(suspiciousLNs) <- list(
 suspiciousLNs
 
 result.k <- Kappa(suspiciousLNs, weights = "Fleiss-Cohen")
+
+confint(result.k)
+
+summary(result.k)
+# ASE = Asymptotic Standard Error
+
+```
+
+```{r, echo=false}
+# Read confusion matrix from txt file
+CM_FILE <- choose.files(default = "*.txt",
+            caption = "Select just one csv file",
+            multi = FALSE)
+#filters = Filters[c("csv", "txt"),]) don't work (JvA)
+
+cm <- read.table(CM_FILE, 
+                header = FALSE,  
+                sep = "\t")
+                #dec = ",")
+                #fill = TRUE, 
+                #strip.white = TRUE, 
+                #stringsAsFactors=TRUE)
+
+require(data.table)
+setDT(cm)
+
+rbind(cm)
+
+dimnames(cm) <- list(
+  RA = c("LoS1","LoS2","LoS3","LoS4","LoS5"),
+  RT = c("LoS1","LoS2","LoS3","LoS4","LoS5")
+)
+
+# Print cm
+print(cm)
+
+```
+
+```{r, echo=false}
+# Cannot yet convert read text file into a valid R table format...
+# So, inserted the confusion matrix for all 3T patients by hand:
+
+cm <- as.table(
+  rbind(
+    c(0,0,0,0,0),
+    c(1,1,3,13,0),
+    c(0,1,6,18,6),
+    c(0,0,10,10,11),
+    c(0,0,1,4,13)
+  )
+)
+
+dimnames(cm) <- list(
+  RA = c("LoS1","LoS2","LoS3","LoS4","LoS5"),
+  RT = c("LoS1","LoS2","LoS3","LoS4","LoS5")
+)
+
+# Inspect data types
+str(cm)
+
+all3TLNs <- cm
+
+result.k <- Kappa(all3TLNs, weights = "Fleiss-Cohen")
+
+confint(result.k)
 
 summary(result.k)
 # ASE = Asymptotic Standard Error
