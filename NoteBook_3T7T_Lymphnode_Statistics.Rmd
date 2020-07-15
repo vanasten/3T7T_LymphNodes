@@ -55,6 +55,96 @@ Histogram of the lymphnode sizes:
    ggplot(LNsize,aes(LNsize))
 ```
 
+# Load total number of 3T lymphe nodes with labels
+```{r, echo=false}
+library(ggplot2)   #extended plot graphics
+library(tidyverse) #extended data formatting
+library(ggthemes)  #more gg themes
+library(RColorBrewer)     #ggplot colours
+(.packages())      #display loaded packages
+
+#List colour palettes
+display.brewer.all(colorblindFriendly=TRUE)
+
+# Read confusion matrix from txt file
+CSV_FILE <- choose.files(default = "*.csv",
+            caption = "Select just one csv file",
+            multi = FALSE)
+#filters = Filters[c("csv", "txt"),]) don't work (JvA)
+
+labeled_LNs <- read.csv2(CSV_FILE, 
+                header = TRUE,  
+                sep = ";",
+                dec = ",")
+                #fill = TRUE, 
+                #strip.white = TRUE, 
+                #stringsAsFactors=TRUE)
+
+labeled_LNs <- labeled_LNs[1:(nrow(labeled_LNs)-6),]
+
+print(labeled_LNs)
+
+head(labeled_LNs)
+relabel <- reshape2::melt(labeled_LNs) #?
+head(relabel)
+
+bp <- ggplot(labeled_LNs, aes(x=READER,y=VOLUME)) +
+   geom_boxplot(colour="#3366FF",outlier.colour="red") +
+   labs(x="Readers", y="LN volume in mm^3",title="      Scored Lymphe node volumes") +
+   geom_jitter(size=1,alpha=0.2,width=0.2) +
+   scale_y_continuous(limits=c(0, 50)) +
+   #scale_color_jco() +
+   #scale_fill_jco() +
+   scale_color_brewer(palette="Paired") +
+   scale_fill_brewer(palette="Paired") +
+   theme_gdocs()
+   #theme_stata()
+   #theme_hc() #high charts
+   #ylim(c(1, 150))
+bp
+
+hg <- ggplot(labeled_LNs, aes(y=VOLUME)) +
+   geom_histogram(binwidth=0.5) +
+   #facet_grid(.~variable) +
+   scale_y_continuous(limits=c(0, 75)) +
+   #scale_color_jco() +
+   #scale_fill_jco() +
+   scale_color_brewer(palette="Paired") +
+   scale_fill_brewer(palette="Paired") +
+   coord_flip() +
+   theme_gdocs()
+hg
+
+pr <- ggplot(labeled_LNs, aes(x=READER,y=VOLUME)) +
+   geom_pointrange(color= "blue", ymin=0, ymax=120) +
+   labs(x = "Readers", y = "LN volume in mm^3") +
+   ggtitle("Scored Lymphe node volumes") +
+   geom_errorbar(ymin=0, ymax=50) +
+   scale_y_continuous(limits=c(0, 50)) +
+   #scale_color_jco() +
+   #scale_fill_jco() +
+   scale_color_brewer(palette="Paired") +
+   scale_fill_brewer(palette="Paired") +
+   theme_gdocs()
+pr
+
+relabel <- reshape2::melt(labeled_LNs) #?
+
+fg <- ggplot(relabel, aes(y=READER,x=PATIENT,color=factor(READER))) +
+   geom_point(shape=1,color="blue") +
+   geom_smooth(method='gam', se=F) +
+   facet_grid(.~variable) +
+   coord_flip() +
+   #scale_y_continuous(limits=c(0, 50)) +
+   #scale_color_jco() +
+   #scale_fill_jco() +
+   scale_color_brewer(palette="Paired") +
+   scale_fill_brewer(palette="Paired") +
+   theme_gdocs()
+fg
+
+```
+
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
 
 See: https://www.datanovia.com/en/lessons/cohens-kappa-in-r-for-two-categorical-variables/#kappa-for-two-categorical-variables-with-multiple-levels for an extended description of calculating kappa for 2 readers with multiple levels.
