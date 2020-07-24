@@ -19,23 +19,23 @@ When you click the **Knit** button a document will be generated that includes bo
 ```{r, echo=FALSE}
    library(readr)
    #Pat0_lymphnodes <- read_csv("~/BIOMR_CACHE/Pat0_lymphnodes.csv")
-   Pat0LNs <- file.choose()
-   LNs <- read_csv(Pat0LNs)
+   File_with_LNs <- file.choose()
+   LNs <- read_csv(File_with_LNs)
    # 4/3*PI*a*b*c*1/8 (radius; abc are diameters)
-   Pt0_Volumes <- 1/6*pi*Pat0_lymphnodes[1]*Pat0_lymphnodes[2]*Pat0_lymphnodes[3]
+   LN_Volumes <- 1/6*pi*LNs[1]*LNs[2]*LNs[3]
 ```
 
 ```{r}
-   summary(Pat0_lymphnodes)
-   summary(Pt0_Volumes)
+   summary(LNs)
+   summary(LN_Volumes)
 ```
 
 ## Including Plots
 Boxplots of the lymphnode sizes:
 ```{r pressure, echo=FALSE}
    library(ggplot2)
-   boxplot(Pt0_Volumes,col="light blue")
-   boxplot(Pat0_lymphnodes,col="light blue")
+   boxplot(LNs,col="light blue")
+   boxplot(LN_Volumes,col="light blue")
    #plot(pressure)
 ```
 
@@ -44,7 +44,7 @@ Histogram of the lymphnode sizes:
 ```{r, echo=FALSE}
    library(ggplot2)
    # for histogram or (bar)plot, make row out of column first
-   LNsize <- data.frame(t(Pt0_Volumes))
+   LNsize <- data.frame(t(LN_Volumes))
    #?tibble::rownames_to_column(LNsize, var="LN_sizes")
    x <- (1:length(LNsize))
 
@@ -55,12 +55,13 @@ Histogram of the lymphnode sizes:
    ggplot(LNsize,aes(LNsize))
 ```
 
-# Load total number of 3T lymphe nodes with labels
+# LOAD total number of 3T lymphe nodes with labels
 ```{r, echo=false}
 library(ggplot2)   #extended plot graphics
 library(tidyverse) #extended data formatting
 library(ggthemes)  #more gg themes
-library(RColorBrewer)     #ggplot colours
+library(RColorBrewer) #ggplot colours
+library(correlation) #awesome statistics package (easystats.github.io/correlation)
 (.packages())      #display loaded packages
 
 #List colour palettes
@@ -87,6 +88,12 @@ print(labeled_LNs)
 head(labeled_LNs)
 relabel <- reshape2::melt(labeled_LNs) #?
 head(relabel)
+```
+
+# MAKE GGPLOTS of 3T lymphe nodes with labels
+```{r, echo=false}
+
+#See https://cedricscherer.netlify.app/2019/08/05/a-ggplot2-tutorial-for-beautiful-plotting-in-r
 
 bp <- ggplot(labeled_LNs, aes(x=READER,y=VOLUME)) +
    geom_boxplot(colour="#3366FF",outlier.colour="red") +
@@ -97,6 +104,7 @@ bp <- ggplot(labeled_LNs, aes(x=READER,y=VOLUME)) +
    #scale_fill_jco() +
    scale_color_brewer(palette="Paired") +
    scale_fill_brewer(palette="Paired") +
+   stat_summary(fun=mean, geom="pointrange", size=.4, colour="orange") +
    theme_gdocs()
    #theme_stata()
    #theme_hc() #high charts
