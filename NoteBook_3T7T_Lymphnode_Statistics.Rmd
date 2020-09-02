@@ -20,7 +20,10 @@ When you click the **Knit** button a document will be generated that includes bo
    library(readr)
    #Pat0_lymphnodes <- read_csv("~/BIOMR_CACHE/Pat0_lymphnodes.csv")
    File_with_LNs <- file.choose()
-   LNs <- read_csv(File_with_LNs)
+   LNs <- read.csv2(File_with_LNs,
+                header = TRUE,
+                sep = ";",
+                dec = ",")
    # 4/3*PI*a*b*c*1/8 (radius; abc are diameters)
    LN_Volumes <- 1/6*pi*LNs[1]*LNs[2]*LNs[3]
 ```
@@ -52,7 +55,7 @@ Histogram of the lymphnode sizes:
 
    plot(x,LNsize,type="l",col="blue")
    #ggplot(LNsize,aes(x = "size mm^3",y=t.LNsize.)) + stat_identity(geom = "bar")
-   ggplot(LNsize,aes(LNsize))
+   #ggplot(LNsize,aes(LNsize))
 ```
 
 # LOAD total number of 3T lymphe nodes with labels
