@@ -76,8 +76,9 @@ print(cm)
 
 ```{r, echo=false}
 # Cannot yet convert read text file into a valid R table format...
-# So, inserted the confusion matrix for all 3T patients by hand:
-
+# So, inserted the confusion matrix for all patients by hand;
+# 3 Tesla LNs:
+library("vcd", "vcdExtra")
 cm <- as.table(
   rbind(
     c(0,0,0,0,0),
@@ -88,17 +89,31 @@ cm <- as.table(
   )
 )
 
+# Cannot yet convert read text file into a valid R table format...
+# So, inserted the confusion matrix for all patients by hand;
+# 7 Tesla LNs:
+library("vcd", "vcdExtra")
+cm <- as.table(
+  rbind(
+    c(1,0,1,0,0),
+    c(0,2,0,0,0),
+    c(0,22,9,9,1),
+    c(0,15,13,22,25),
+    c(0,2,2,10,25)
+  )
+)
+
 dimnames(cm) <- list(
   RA = c("LoS1","LoS2","LoS3","LoS4","LoS5"),
   RT = c("LoS1","LoS2","LoS3","LoS4","LoS5")
 )
 
-# Inspect data types
-str(cm)
+# Inspect data types and plot
+str(cm); cm
 
-all3TLNs <- cm
+all3or7TLNs <- cm
 
-result.k <- Kappa(all3TLNs, weights = "Fleiss-Cohen")
+result.k <- Kappa(all3or7TLNs, weights = "Fleiss-Cohen")
 
 confint(result.k)
 
