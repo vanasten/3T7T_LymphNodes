@@ -81,11 +81,11 @@ print(cm)
 library("vcd", "vcdExtra")
 cm <- as.table(
   rbind(
-    c(0,0,0,0,0),
-    c(1,1,3,13,0),
-    c(0,1,6,18,6),
-    c(0,0,10,10,11),
-    c(0,0,1,4,13)
+    c(0,1,0,0,0),
+    c(0,1,1,0,0),
+    c(0,3,6,10,1),
+    c(0,13,18,10,4),
+    c(0,0,6,11,13)
   )
 )
 
@@ -113,12 +113,18 @@ str(cm); cm
 
 all3or7TLNs <- cm
 
+#Nicely explained in:
+#https://datanovia.com/en/lessons/cohens-kappa-in-r-for-two-categorical-variables/
 result.k <- Kappa(all3or7TLNs, weights = "Fleiss-Cohen")
 
 confint(result.k)
 
 summary(result.k)
-# ASE = Asymptotic Standard Error
+# ASE = Approximate (Asymptotic) Standard Error
+
+print(result.k, CI=TRUE)
+
+agreementplot(cm)
 
 ```
 
