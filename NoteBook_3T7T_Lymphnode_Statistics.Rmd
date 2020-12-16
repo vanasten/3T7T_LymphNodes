@@ -58,19 +58,20 @@ Histogram of the lymphnode sizes:
    #ggplot(LNsize,aes(LNsize))
 ```
 
-# LOAD total number of 3T lymphe nodes with labels
+# LOAD total number of 3T/7T lymphe nodes with labels
 ```{r, echo=false}
 library(ggplot2)   #extended plot graphics
 library(tidyverse) #extended data formatting
 library(ggthemes)  #more gg themes
 library(RColorBrewer) #ggplot colours
 library(correlation) #awesome statistics package (easystats.github.io/correlation)
+library(esquisse) #awesome ggplot2 builder
 (.packages())      #display loaded packages
 
 #List colour palettes
 display.brewer.all(colorblindFriendly=TRUE)
 
-# Read confusion matrix from txt file
+# Read labeled lymphe node values from txt file
 CSV_FILE <- choose.files(default = "*.csv",
             caption = "Select just one csv file",
             multi = FALSE)
@@ -84,7 +85,7 @@ labeled_LNs <- read.csv2(CSV_FILE,
                 #strip.white = TRUE, 
                 #stringsAsFactors=TRUE)
 
-labeled_LNs <- labeled_LNs[1:(nrow(labeled_LNs)-6),]
+labeled_LNs <- labeled_LNs[1:(nrow(labeled_LNs)-4),] # Skip last 4 rows!
 
 print(labeled_LNs)
 
@@ -93,14 +94,14 @@ relabel <- reshape2::melt(labeled_LNs) #?
 head(relabel)
 ```
 
-# MAKE GGPLOTS of 3T lymphe nodes with labels
+# MAKE GGPLOTS of 3T/7T lymphe nodes with labels
 ```{r, echo=false}
 
 #See https://cedricscherer.netlify.app/2019/08/05/a-ggplot2-tutorial-for-beautiful-plotting-in-r
 
-bp <- ggplot(labeled_LNs, aes(x=READER,y=VOLUME)) +
+bpv <- ggplot(labeled_LNs, aes(x=READER,y=VOLUME)) +
    geom_boxplot(colour="#3366FF",outlier.colour="red") +
-   labs(x="Readers", y="LN volume in mm^3",title="      Scored Lymphe node volumes") +
+   labs(x="Readers", y="LN volume (mm^3)",title="Lymphe nodes @3T") +
    geom_jitter(size=1,alpha=0.2,width=0.2) +
    scale_y_continuous(limits=c(0, 50)) +
    #scale_color_jco() +
@@ -112,7 +113,40 @@ bp <- ggplot(labeled_LNs, aes(x=READER,y=VOLUME)) +
    #theme_stata()
    #theme_hc() #high charts
    #ylim(c(1, 150))
-bp
+bpv;
+
+bpx <- ggplot(labeled_LNs, aes(x=READER,y=SHORT_AXIS)) +
+   geom_boxplot(colour="#3366FF",outlier.colour="red") +
+   labs(x="Readers", y="LN axis (mm)",title="Lymphe nodes @3T") +
+   geom_jitter(size=1,alpha=0.2,width=0.2) +
+   scale_y_continuous(limits=c(0, 10)) +
+   #scale_color_jco() +
+   #scale_fill_jco() +
+   scale_color_brewer(palette="Paired") +
+   scale_fill_brewer(palette="Paired") +
+   stat_summary(fun=mean, geom="pointrange", size=.4, colour="orange") +
+   theme_gdocs()
+   #theme_stata()
+   #theme_hc() #high charts
+   #ylim(c(1, 150))
+bpx;
+
+###Now run esquisse::esquisser(labeled_LNs, viewer="browser")
+#nobins: 100 (max)
+#theme: foundation
+#legend: left
+#data: short axis range to 11.8 mm
+
+#labeled_LNs
+#filter(SHORT_AXIS >= 0.8 & SHORT_AXIS <= 11.8)
+#hg0 <- ggplot() +
+# aes(x = SHORT_AXIS, fill = READER) +
+# geom_histogram(bins = 100L) +
+# scale_fill_hue() +
+# labs(x = "Readers", y = "number of lymphnodes", title = "Detected #suspicious lymphe nodes (short axis)", subtitle = "7 tesla") +
+# ggthemes::theme_foundation() +
+# theme(legend.position = "left")
+#hg0
 
 hg <- ggplot(labeled_LNs, aes(y=VOLUME)) +
    geom_histogram(binwidth=0.5) +
