@@ -1,0 +1,102 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+plot(cars)
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
+
+```{r, echo=false}
+# LOAD total number of 3T/7T lymphe nodes with labels
+
+library(ggplot2)   #extended plot graphics
+library(tidyverse) #extended data formatting
+library(ggthemes)  #more gg themes
+library(RColorBrewer) #ggplot colours
+library(correlation) #awesome statistics package (easystats.github.io/correlation)
+library(esquisse) #awesome ggplot2 builder
+(.packages())      #display loaded packages
+
+#List colour palettes
+display.brewer.all(colorblindFriendly=TRUE)
+
+# Read labeled lymphe node values from txt file
+CSV_FILE <- choose.files(default = "*.csv",
+            caption = "Select just one csv file",
+            multi = FALSE)
+#filters = Filters[c("csv", "txt"),]) don't work (JvA)
+
+labeled_LNs <- read.csv2(CSV_FILE, 
+                header = TRUE,  
+                sep = ";",
+                dec = ",")
+                #fill = TRUE, 
+                #strip.white = TRUE, 
+                #stringsAsFactors=TRUE)
+
+#labeled_LNs <- labeled_LNs[1:(nrow(labeled_LNs)-4),] # Skip last 4 rows! Not necessary anymore; see README_EXCEL_FILES.JvA
+
+print(labeled_LNs)
+
+head(labeled_LNs)
+relabel <- reshape2::melt(labeled_LNs) #?
+
+#Access data frame
+library(dplyr)
+
+selection <- labeled_LNs %>% select(FIELD, LoS_RA, LoS_RT)
+selection;
+
+head(relabel)
+
+class(labeled_LNs)
+typeof(labeled_LNs)
+names(labeled_LNs)
+ncol(labeled_LNs)
+nrow(labeled_LNs)
+length(labeled_LNs)
+
+```
+
+```{r}
+#Introductory information: https://m-clark.github.io/mixed-models-with-R/
+
+library(Matrix)
+library(lme4)
+library(optimx)
+library(jtools) #for using summ(LME_output)
+library(lmerTest) #for using ranova(LME_output)
+library(reghelper) #for using simple_slopes(LME_output) and graph_model(LME_output,y=somepar,x=somepar,lines=somepar)
+
+#Coerce LoS_RA and LoS_RT from integer to factors in levels first
+labeled_LNs$LoS_RA <- as.factor(labeled_LNs$LoS_RA)
+labeled_LNs$LoS_RA;
+labeled_LNs$LoS_RT <- as.factor(labeled_LNs$LoS_RT)
+
+lmxm_FR = lmer(SHORT_AXIS ~ FIELD + (1|READER), data = labeled_LNs);
+summary(lmxm_FR);
+
+lmxm_RF = lmer(SHORT_AXIS ~ READER + (1|FIELD), data = labeled_LNs);
+summary(lmxm_RF);
+
+lmxm_SARFLoS <- lmer(SHORT_AXIS ~ READER * FIELD + (1|LoS_RA),
+     data = labeled_LNs)
+summary(lmxm_SARFLoS);
+
+#For examples run:
+RShowDoc("lmerperf", package = "lme4");
+lme4()
+```
+
