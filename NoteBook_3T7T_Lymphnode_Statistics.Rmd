@@ -60,6 +60,7 @@ Histogram of the lymphnode sizes:
 
 # LOAD total number of 3T/7T lymphe nodes with labels
 ```{r, echo=false}
+library(tcltk) #for Linux compatibility (tk_choose.files)
 library(ggplot2)   #extended plot graphics
 library(tidyverse) #extended data formatting
 library(ggthemes)  #more gg themes
@@ -72,7 +73,7 @@ library(esquisse) #awesome ggplot2 builder
 display.brewer.all(colorblindFriendly=TRUE)
 
 # Read labeled lymphe node values from txt file
-CSV_FILE <- choose.files(default = "*.csv",
+CSV_FILE <- tk_choose.files(default = "*.csv",
             caption = "Select just one csv file",
             multi = FALSE)
 #filters = Filters[c("csv", "txt"),]) don't work (JvA)
@@ -151,9 +152,8 @@ hg0 <- labeled_LNs %>%
 hg0;
 
 hgX <- labeled_LNs %>%
- filter(!(LoS_RA %in% "1") & !is.na(LoS_RA)) %>%
- filter(!(LoS_RT %in% 
-    "1") & !is.na(LoS_RT)) %>%
+ filter(!(LoS_RA %in% "0") & !is.na(LoS_RA)) %>%
+ filter(!(LoS_RT %in% "0") & !is.na(LoS_RT)) %>%
 ggplot() +
  aes(x = SHORT_AXIS, colour = FIELD) +
  geom_histogram(bins = 100L, fill = "#0c4c8a") +

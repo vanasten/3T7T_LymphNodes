@@ -20,7 +20,7 @@ The preview shows you a rendered HTML copy of the contents of the editor. Conseq
 
 ```{r, echo=false}
 # LOAD total number of 3T/7T lymphe nodes with labels
-
+library(tcltk) #for Linux compatibility (tk_choose.files)
 library(ggplot2)   #extended plot graphics
 library(tidyverse) #extended data formatting
 library(ggthemes)  #more gg themes
@@ -33,7 +33,7 @@ library(esquisse) #awesome ggplot2 builder
 display.brewer.all(colorblindFriendly=TRUE)
 
 # Read labeled lymphe node values from txt file
-CSV_FILE <- choose.files(default = "*.csv",
+CSV_FILE <- tk_choose.files(default = "*.csv",
             caption = "Select just one csv file",
             multi = FALSE)
 #filters = Filters[c("csv", "txt"),]) don't work (JvA)
@@ -75,6 +75,7 @@ length(labeled_LNs)
 
 library(Matrix)
 library(lme4)
+library(tidyverse) #for using advanced coding with pipelines %>%
 library(optimx)
 library(jtools) #for using summ(LME_output)
 library(lmerTest) #for using ranova(LME_output)
@@ -82,21 +83,123 @@ library(reghelper) #for using simple_slopes(LME_output) and graph_model(LME_outp
 
 #Coerce LoS_RA and LoS_RT from integer to factors in levels first
 labeled_LNs$LoS_RA <- as.factor(labeled_LNs$LoS_RA)
-labeled_LNs$LoS_RA;
+#labeled_LNs$LoS_RA;
 labeled_LNs$LoS_RT <- as.factor(labeled_LNs$LoS_RT)
+#labeled_LNs$LoS_RT;
+labeled_LNs$FIELD <- as.factor(labeled_LNs$FIELD)
+#labeled_LNs$FIELD;
+labeled_LNs$READER <- as.factor(labeled_LNs$READER)
 
-lmxm_FR = lmer(SHORT_AXIS ~ FIELD + (1|READER), data = labeled_LNs);
-summary(lmxm_FR);
+glimpse(labeled_LNs)
 
-lmxm_RF = lmer(SHORT_AXIS ~ READER + (1|FIELD), data = labeled_LNs);
-summary(lmxm_RF);
+#find variance with lmer:
+lmer(SHORT_AXIS ~ 1 + (1|READER), data = labeled_LNs) %>% ICC() %>% .[[1]]
 
-lmxm_SARFLoS <- lmer(SHORT_AXIS ~ READER * FIELD + (1|LoS_RA),
+lmer(SHORT_AXIS ~ 1 + (1|VOLUME), data = labeled_LNs) %>% ICC() %>% .[[1]]
+
+lmer(SHORT_AXIS ~ 1 + (1|FIELD), data = labeled_LNs) %>% ICC() %>% .[[1]]
+
+lmer(SHORT_AXIS ~ 1 + (1|LoS_RA), data = labeled_LNs) %>% ICC() %>% .[[1]]
+
+lmer(SHORT_AXIS ~ 1 + (1|LoS_RT), data = labeled_LNs) %>% ICC() %>% .[[1]]
+
+lmer(SHORT_AXIS ~ 1 + (1|PATIENT), data = labeled_LNs) %>% ICC() %>% .[[1]]
+
+#short_axis correlation with field (fixed) and reader (random)
+lmm_SHFR = lmer(SHORT_AXIS ~ FIELD + (1|READER), data = labeled_LNs);
+summary(lmm_SHFR);
+
+#short_axis correlation with reader (fixed) and field (random)
+lmm_SHRF = lmer(SHORT_AXIS ~ READER + (1|FIELD), data = labeled_LNs);
+summary(lmm_SHRF);
+
+#short_axis correlation with patient (fixed) and reader (random)
+lmm_SHPR = lmer(SHORT_AXIS ~ PATIENT + (1|READER), data = labeled_LNs);
+summary(lmm_SHPR);
+print(lmm_SHPR, correlation = TRUE);
+#vcov(lmm_SHPR); #var-covariance matrix (if needed)
+
+#short_axis correlation with patient (fixed) and reader (random)
+lmm_SHPF = lmer(SHORT_AXIS ~ PATIENT + (1|FIELD), data = labeled_LNs);
+summary(lmm_SHPF);
+print(lmm_SHPF, correlation = TRUE);
+#vcov(lmm_SHPF); #var-covariance matrix (if needed)
+
+#short_axis correlation with reader*field and los_RA (random)
+lmm_SHRxFLoSRA <- lmer(SHORT_AXIS ~ READER * FIELD + (1|LoS_RA),
      data = labeled_LNs)
-summary(lmxm_SARFLoS);
+summary(lmm_SHRxFLoSRA);
+
+#short_axis correlation with reader*field and los_RT (random)
+lmm_SHRxFLoSRT <- lmer(SHORT_AXIS ~ READER * FIELD + (1|LoS_RT),
+     data = labeled_LNs)
+summary(lmm_SHRxFLoSRT);
+
+#short_axis correlation with reader, field, los_RA and los_RT (all as random)
+lmm_SHRFPLosRA <- lmer(SHORT_AXIS ~ (1|READER) + (1|FIELD) + (1|PATIENT)
+                        + (1|LoS_RA) 
+                        #+ (1|LoS_RT)
+                        , data = labeled_LNs)
+summary(lmm_SHRFPLosRA);
+
+lmm_SHRFPLosRT <- lmer(SHORT_AXIS ~ (1|READER) + (1|FIELD) + (1|PATIENT)
+                        #+ (1|LoS_RA) 
+                        + (1|LoS_RT)
+                        , data = labeled_LNs)
+summary(lmm_SHRFPLosRT);
+
+#Compare the optional models:
+performance::compare_performance(lmm_SHFR,
+                                 lmm_SHRF,
+                                 lmm_SHPR,
+                                 lmm_SHPF,
+                                 #lmm_SHRxFLoSRA,
+                                 #lmm_SHRxFLoSRT,
+                                 #lmm_SHRFPLosRA,
+                                 #lmm_SHRFPLosRT,
+                                 metrics = "all",
+                                 rank = TRUE,
+                                 bf = FALSE
+                                 );
+
+performance::compare_performance(#lmm_SHFR,
+                                 #lmm_SHRF,
+                                 #lmm_SHPR,
+                                 #lmm_SHPF,
+                                 lmm_SHRxFLoSRA,
+                                 lmm_SHRxFLoSRT,
+                                 lmm_SHRFPLosRA,
+                                 lmm_SHRFPLosRT,
+                                 metrics = "all",
+                                 rank = TRUE,
+                                 bf = FALSE
+                                 );
 
 #For examples run:
 RShowDoc("lmerperf", package = "lme4");
-lme4()
+lmerControl()
+```
+```{r}
+#Visualise the models
+#just once:
+#install.packages("devtools")
+#devtools::install_github("easystats/see")
+
+library(see)
+library(rstanarm)
+library(modelbased)
+
+dat <- rstanarm::stan_glmer(FIELD ~ poly(SHORT_AXIS, 2), data = labeled_LNs) %>%
+  modelbased::estimate_link(keep_draws = TRUE, length = 100, draws = 250) %>%
+  modelbased::reshape_draws()
+
+p <- ggplot(dat, aes(x = Petal.Length, y = Draw, group = Draw_Group)) +
+  geom_line(color = "white", alpha = 0.05) +
+  scale_x_continuous(expand = c(0, 0)) +
+  scale_y_continuous(expand = c(0, 0))
+
+p + theme_blackboard() 
+
+
 ```
 
