@@ -105,22 +105,44 @@ lmer(SHORT_AXIS ~ 1 + (1|LoS_RT), data = labeled_LNs) %>% ICC() %>% .[[1]]
 
 lmer(SHORT_AXIS ~ 1 + (1|PATIENT), data = labeled_LNs) %>% ICC() %>% .[[1]]
 
+# All lymph nodes included!
+#lmm_ALL <- lmer(SHORT_AXIS ~ READER + FIELD + (1|READER) + (1|FIELD) + (1|LoS_RA) + (1|LoS_RT), data = labeled_LNs, REML=FALSE);
+lmm_ALL <- lmer(SHORT_AXIS ~ READER+FIELD+(1|READER)+(1|FIELD), data = labeled_LNs, REML=FALSE);
+summary(lmm_ALL); #extended output
+summ(lmm_ALL, digits=4); #smooth layout, but less info
+ranova(lmm_ALL); #test with anova
+#plot regression lines;
+#simple_slopes(lmm_ALL)
+graph_model(lmm_ALL,y=SHORT_AXIS,x=FIELD,lines=READER);
+graph_model(lmm_ALL,y=SHORT_AXIS,x=READER,lines=FIELD);
+
+
+#short_axis correlation with LoS and LoS interaction
+lmm_SHLOS <- lmer(SHORT_AXIS ~ LoS_RA + LoS_RT + (LoS_RA|LoS_RT),data=labeled_LNs,REML=FALSE)
+summary(lmm_SHLOS); #extended output
+summ(lmm_SHLOS, digits=3); #smooth layout, less info
+
+
 #short_axis correlation with field (fixed) and reader (random)
-lmm_SHFR = lmer(SHORT_AXIS ~ FIELD + (1|READER), data = labeled_LNs);
-summary(lmm_SHFR);
+lmm_SHFR <- lmer(SHORT_AXIS ~ FIELD + (1|READER), data = labeled_LNs);
+summary(lmm_SHFR); #extended output
+summ(lmm_SHFR); #smooth layout, but less info
+ranova(lmm_SHFR); #test with anova
 
 #short_axis correlation with reader (fixed) and field (random)
-lmm_SHRF = lmer(SHORT_AXIS ~ READER + (1|FIELD), data = labeled_LNs);
-summary(lmm_SHRF);
+lmm_SHRF <- lmer(SHORT_AXIS ~ READER + (1|FIELD), data = labeled_LNs);
+summary(lmm_SHRF); #extended output
+summ(lmm_SHRF); #smooth layout, but less info
+ranova(lmm_SHRF); #test with anova
 
 #short_axis correlation with patient (fixed) and reader (random)
-lmm_SHPR = lmer(SHORT_AXIS ~ PATIENT + (1|READER), data = labeled_LNs);
+lmm_SHPR <- lmer(SHORT_AXIS ~ PATIENT + (1|READER), data = labeled_LNs);
 summary(lmm_SHPR);
 print(lmm_SHPR, correlation = TRUE);
 #vcov(lmm_SHPR); #var-covariance matrix (if needed)
 
 #short_axis correlation with patient (fixed) and reader (random)
-lmm_SHPF = lmer(SHORT_AXIS ~ PATIENT + (1|FIELD), data = labeled_LNs);
+lmm_SHPF <- lmer(SHORT_AXIS ~ PATIENT + (1|FIELD), data = labeled_LNs);
 summary(lmm_SHPF);
 print(lmm_SHPF, correlation = TRUE);
 #vcov(lmm_SHPF); #var-covariance matrix (if needed)
