@@ -121,6 +121,9 @@ graph_model(lmm_ALL,y=SHORT_AXIS,x=READER,lines=FIELD);
 lmm_SHLOS <- lmer(SHORT_AXIS ~ LoS_RA + LoS_RT + (LoS_RA|LoS_RT),data=labeled_LNs,REML=FALSE)
 summary(lmm_SHLOS); #extended output
 summ(lmm_SHLOS, digits=3); #smooth layout, less info
+ranova(lmm_SHLOS); #test with anova
+simple_slopes(lmm_SHLOS);
+graph_model(lmm_SHLOS,y=SHORT_AXIS,x=LoS_RA,lines=LoS_RT);
 
 
 #short_axis correlation with field (fixed) and reader (random)
