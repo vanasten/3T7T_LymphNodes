@@ -78,8 +78,11 @@ library(lme4)
 library(tidyverse) #for using advanced coding with pipelines %>%
 library(optimx)
 library(jtools) #for using summ(LME_output)
+library(performance) #for using r2 and icc (a.o.)
+library(parameters) #for judging: model_parameters(yourmodel)
 library(lmerTest) #for using ranova(LME_output)
 library(reghelper) #for using simple_slopes(LME_output) and graph_model(LME_output,y=somepar,x=somepar,lines=somepar)
+#https://easystats.github.io/see/articles/performance.html
 
 #Coerce LoS_RA and LoS_RT from integer to factors in levels first
 labeled_LNs$LoS_RA <- as.factor(labeled_LNs$LoS_RA)
@@ -89,6 +92,7 @@ labeled_LNs$LoS_RT <- as.factor(labeled_LNs$LoS_RT)
 labeled_LNs$FIELD <- as.factor(labeled_LNs$FIELD)
 #labeled_LNs$FIELD;
 labeled_LNs$READER <- as.factor(labeled_LNs$READER)
+#labeled_LNs$READER
 
 glimpse(labeled_LNs)
 
@@ -107,6 +111,7 @@ lmer(SHORT_AXIS ~ 1 + (1|PATIENT), data = labeled_LNs) %>% ICC() %>% .[[1]]
 
 # All lymph nodes included!
 #lmm_ALL <- lmer(SHORT_AXIS ~ READER + FIELD + (1|READER) + (1|FIELD) + (1|LoS_RA) + (1|LoS_RT), data = labeled_LNs, REML=FALSE);
+#lmm_ALL <- lmer(SHORT_AXIS ~ READER+FIELD+PATIENT+(1|READER)+(1|FIELD)+(1|PATIENT), data = labeled_LNs, REML=FALSE);
 lmm_ALL <- lmer(SHORT_AXIS ~ READER+FIELD+(1|READER)+(1|FIELD), data = labeled_LNs, REML=FALSE);
 summary(lmm_ALL); #extended output
 summ(lmm_ALL, digits=4); #smooth layout, but less info
@@ -115,90 +120,131 @@ ranova(lmm_ALL); #test with anova
 #simple_slopes(lmm_ALL)
 graph_model(lmm_ALL,y=SHORT_AXIS,x=FIELD,lines=READER);
 graph_model(lmm_ALL,y=SHORT_AXIS,x=READER,lines=FIELD);
-
+homo_var <- check_heteroscedasticity(lmm_ALL)
+plot(homo_var);
 
 #short_axis correlation with LoS and LoS interaction
 lmm_SHLOS <- lmer(SHORT_AXIS ~ LoS_RA + LoS_RT + (LoS_RA|LoS_RT),data=labeled_LNs,REML=FALSE)
 summary(lmm_SHLOS); #extended output
 summ(lmm_SHLOS, digits=3); #smooth layout, less info
 ranova(lmm_SHLOS); #test with anova
-simple_slopes(lmm_SHLOS);
+#simple_slopes(lmm_SHLOS);
 graph_model(lmm_SHLOS,y=SHORT_AXIS,x=LoS_RA,lines=LoS_RT);
-
+homo_var <- check_heteroscedasticity(lmm_SHLOS)
+plot(homo_var);
 
 #short_axis correlation with field (fixed) and reader (random)
 lmm_SHFR <- lmer(SHORT_AXIS ~ FIELD + (1|READER), data = labeled_LNs);
 summary(lmm_SHFR); #extended output
 summ(lmm_SHFR); #smooth layout, but less info
 ranova(lmm_SHFR); #test with anova
+#simple_slopes(lmm_SHFR);
+graph_model(lmm_SHFR,y=SHORT_AXIS,x=READER,lines=FIELD);
+homo_var <- check_heteroscedasticity(lmm_SHFR)
+plot(homo_var);
 
 #short_axis correlation with reader (fixed) and field (random)
 lmm_SHRF <- lmer(SHORT_AXIS ~ READER + (1|FIELD), data = labeled_LNs);
 summary(lmm_SHRF); #extended output
 summ(lmm_SHRF); #smooth layout, but less info
 ranova(lmm_SHRF); #test with anova
+graph_model(lmm_SHRF,y=SHORT_AXIS,x=FIELD,lines=READER);
+homo_var <- check_heteroscedasticity(lmm_SHRF)
+plot(homo_var);
 
 #short_axis correlation with patient (fixed) and reader (random)
 lmm_SHPR <- lmer(SHORT_AXIS ~ PATIENT + (1|READER), data = labeled_LNs);
 summary(lmm_SHPR);
+summ(lmm_SHPR);
 print(lmm_SHPR, correlation = TRUE);
 #vcov(lmm_SHPR); #var-covariance matrix (if needed)
+graph_model(lmm_SHPR,y=SHORT_AXIS,x=READER,lines=PATIENT);
+homo_var <- check_heteroscedasticity(lmm_SHPR)
+plot(homo_var);
 
 #short_axis correlation with patient (fixed) and reader (random)
 lmm_SHPF <- lmer(SHORT_AXIS ~ PATIENT + (1|FIELD), data = labeled_LNs);
 summary(lmm_SHPF);
 print(lmm_SHPF, correlation = TRUE);
 #vcov(lmm_SHPF); #var-covariance matrix (if needed)
+graph_model(lmm_SHPF,y=SHORT_AXIS,x=FIELD,lines=PATIENT);
+homo_var <- check_heteroscedasticity(lmm_SHPF)
+plot(homo_var);
 
-#short_axis correlation with reader*field and los_RA (random)
+#short_axis cross correlation with reader*field and los_RA (random)
 lmm_SHRxFLoSRA <- lmer(SHORT_AXIS ~ READER * FIELD + (1|LoS_RA),
      data = labeled_LNs)
 summary(lmm_SHRxFLoSRA);
+#graph_model(lmm_SHRxFLoSRA,y=SHORT_AXIS,x=LoS_RA,lines=READER?FIELD);
+homo_var <- check_heteroscedasticity(lmm_SHRxFLoSRA)
+plot(homo_var);
 
-#short_axis correlation with reader*field and los_RT (random)
+#short_axis cross correlation with reader*field and los_RT (random)
 lmm_SHRxFLoSRT <- lmer(SHORT_AXIS ~ READER * FIELD + (1|LoS_RT),
      data = labeled_LNs)
 summary(lmm_SHRxFLoSRT);
+#graph_model(lmm_SHRxFLoSRT,y=SHORT_AXIS,x=LoS_RT,lines=LoS_RT);
+homo_var <- check_heteroscedasticity(lmm_SHRxFLoSRT)
+plot(homo_var);
 
 #short_axis correlation with reader, field, los_RA and los_RT (all as random)
-lmm_SHRFPLosRA <- lmer(SHORT_AXIS ~ (1|READER) + (1|FIELD) + (1|PATIENT)
+lmm_SHRFPLoSRA <- lmer(SHORT_AXIS ~ (1|READER) + (1|FIELD) + (1|PATIENT)
                         + (1|LoS_RA) 
                         #+ (1|LoS_RT)
                         , data = labeled_LNs)
-summary(lmm_SHRFPLosRA);
+summary(lmm_SHRFPLoSRA);
+#graph_model(lmm_SHRFPLoSRA,y=SHORT_AXIS,x=FIELD,lines=LoS_RA);
+homo_var <- check_heteroscedasticity(lmm_SHRFPLoSRA)
+plot(homo_var);
 
-lmm_SHRFPLosRT <- lmer(SHORT_AXIS ~ (1|READER) + (1|FIELD) + (1|PATIENT)
+lmm_SHRFPLoSRT <- lmer(SHORT_AXIS ~ (1|READER) + (1|FIELD) + (1|PATIENT)
                         #+ (1|LoS_RA) 
                         + (1|LoS_RT)
                         , data = labeled_LNs)
-summary(lmm_SHRFPLosRT);
+summary(lmm_SHRFPLoSRT);
+homo_var <- check_heteroscedasticity(lmm_SHRFPLoSRT)
+plot(homo_var);
 
 #Compare the optional models:
 performance::compare_performance(lmm_SHFR,
                                  lmm_SHRF,
                                  lmm_SHPR,
                                  lmm_SHPF,
-                                 #lmm_SHRxFLoSRA,
-                                 #lmm_SHRxFLoSRT,
-                                 #lmm_SHRFPLosRA,
-                                 #lmm_SHRFPLosRT,
                                  metrics = "all",
-                                 rank = TRUE,
-                                 bf = FALSE
+                                 rank = TRUE
+                                 #bf = FALSE
                                  );
 
-performance::compare_performance(#lmm_SHFR,
-                                 #lmm_SHRF,
-                                 #lmm_SHPR,
-                                 #lmm_SHPF,
-                                 lmm_SHRxFLoSRA,
-                                 lmm_SHRxFLoSRT,
-                                 lmm_SHRFPLosRA,
-                                 lmm_SHRFPLosRT,
+performance::compare_performance(lmm_SHLOS,
+                                 lmm_SHRFPLoSRA,
+                                 lmm_SHRFPLoSRT,
                                  metrics = "all",
-                                 rank = TRUE,
-                                 bf = FALSE
+                                 rank = TRUE
+                                 #bf = FALSE
                                  );
+
+performance::compare_performance(lmm_SHRxFLoSRA,
+                                 lmm_SHRxFLoSRT,
+                                 metrics = "all",
+                                 rank = TRUE
+                                 #bf = FALSE
+                                 );
+
+#SOSSE's SUGGESTIONS 20210720:
+labeled_LNs$FIELD <- as.factor(labeled_LNs$FIELD)
+#labeled_LNs$FIELD
+TESLA <- as.numeric(labeled_LNs[,1]); #Numerize: 3T=1, 7T=2
+lmm_FxSA <- lmer( TESLA ~ SHORT_AXIS + (1|SHORT_AXIS),
+                  data = labeled_LNs)
+summary(lmm_FxSA);
+homo_var <- check_heteroscedasticity(lmm_FxSA)
+plot(homo_var);
+
+lmm_FxLoS <- lmer( as.numeric(FIELD) ~ (LoS_RA|LoS_RT), data = labeled_LNs)
+summary(lmm_FxLoS);
+homo_var <- check_heteroscedasticity(lmm_FxLoS)
+plot(homo_var);
+
 
 #For examples run:
 RShowDoc("lmerperf", package = "lme4");

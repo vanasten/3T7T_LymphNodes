@@ -62,6 +62,7 @@ Histogram of the lymphnode sizes:
 ```{r, echo=false}
 library(tcltk) #for Linux compatibility (tk_choose.files)
 library(ggplot2)   #extended plot graphics
+library(ggeffects) #plot model and variables
 library(tidyverse) #extended data formatting
 library(ggthemes)  #more gg themes
 library(RColorBrewer) #ggplot colours
