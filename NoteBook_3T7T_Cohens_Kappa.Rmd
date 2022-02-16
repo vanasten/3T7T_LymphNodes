@@ -8,6 +8,7 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
 ## R Markdown
 
 This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
@@ -125,6 +126,58 @@ summary(result.k)
 print(result.k, CI=TRUE)
 
 agreementplot(cm)
+cotabplot(cm)
+
+# Look at the 3x3 confusion matrix of LoS3 - LoS5 of the 7T data
+# On request of Ansje Fortuin:
+#
+#cm <- as.table(
+#  rbind(
+#    c(x1,x0,x1,x0,x0),
+#    c(x0,x2,x0,x0,x0),
+#    c(x0,x22,9,9,1),
+#    c(x0,x15,13,22,25),
+#    c(x0,x2,2,10,25)
+#  )
+#)
+cm3 <- as.table(
+  rbind(
+    c(9,9,1),
+    c(13,22,25),
+    c(2,10,25)
+  )
+)
+
+dimnames(cm3) <- list(
+  RA = c("LoS3","LoS4","LoS5"),
+  RT = c("LoS3","LoS4","LoS5")
+)
+str(cm3); cm3;
+
+result.k <- Kappa(cm3, weights = "Fleiss-Cohen")
+
+confint(result.k)
+
+summary(result.k)
+# ASE = Approximate (Asymptotic) Standard Error
+
+print(result.k, CI=TRUE)
+
+agreementplot(cm3, reverse_y = T, main = NULL, newpage = F)
+cotabplot(cm3, reverse_y = F, main = "Observer agreement" ,
+          newpage = F,
+          line_col = 'blue', xscale = T, yscale = T,
+          panel = cotab_agreementplot)
+
+# https://datanovia.com/en/lessons/inter-rater-agreement-chart-in-r/
+#Black square: exact observed agreement
+#Gray square: partial agreement by including a weighted contribution 
+#from off-diagonal cells. By default, the weight w = 1 is assigned to #all diagonal cells (exact agreement);
+#a quadratic weight (1 - 1/(k - 1)^2) is assigned to the one-step
+#disagreements (or to the one-step off-diagnal cells,
+#partial agreement). If you don’t want to show partial agreement,
+#specify the argument weights as follow:
+#agreementplot(anxiety, weights = 1)
 
 ```
 
