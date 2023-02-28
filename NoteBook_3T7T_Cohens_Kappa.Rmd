@@ -140,7 +140,9 @@ cotabplot(cm)
 #    c(x0,x2,2,10,25)
 #  )
 #)
-cm3 <- as.table(
+
+# 7T CM 3x3
+cm7T3x3 <- as.table(
   rbind(
     c(9,9,1),
     c(13,22,25),
@@ -148,13 +150,13 @@ cm3 <- as.table(
   )
 )
 
-dimnames(cm3) <- list(
+dimnames(cm7T3x3) <- list(
   RA = c("LoS3","LoS4","LoS5"),
   RT = c("LoS3","LoS4","LoS5")
 )
-str(cm3); cm3;
+str(cm7T3x3); cm7T3x3
 
-result.k <- Kappa(cm3, weights = "Fleiss-Cohen")
+result.k <- Kappa(cm7T3x3, weights = "Fleiss-Cohen")
 
 confint(result.k)
 
@@ -163,11 +165,109 @@ summary(result.k)
 
 print(result.k, CI=TRUE)
 
-agreementplot(cm3, reverse_y = T, main = NULL, newpage = F)
-cotabplot(cm3, reverse_y = F, main = "Observer agreement" ,
+cm <- cm7T3x3
+agreementplot(cm, reverse_y = T, main = NULL, newpage = F)
+cotabplot(cm, reverse_y = F, main = "Observer agreement" ,
           newpage = F,
           line_col = 'blue', xscale = T, yscale = T,
           panel = cotab_agreementplot)
+
+# 7T CM 4x4
+cm7T4x4 <- as.table(
+  rbind(
+    c(2,0,0,0),
+    c(22,9,9,1),
+    c(15,13,22,25),
+    c(2,2,10,25)
+  )
+)
+
+dimnames(cm7T4x4) <- list(
+  RA = c("LoS2","LoS3","LoS4","LoS5"),
+  RT = c("LoS2","LoS3","LoS4","LoS5")
+)
+str(cm7T4x4); cm7T4x4
+
+result.k <- Kappa(cm7T4x4, weights = "Fleiss-Cohen")
+
+confint(result.k)
+
+summary(result.k)
+# ASE = Approximate (Asymptotic) Standard Error
+
+print(result.k, CI=TRUE)
+
+cm <- cm7T4x4
+agreementplot(cm, reverse_y = T, main = NULL, newpage = F)
+cotabplot(cm, reverse_y = F, main = "Observer agreement" ,
+          newpage = F,
+          line_col = 'blue', xscale = T, yscale = T,
+          panel = cotab_agreementplot)
+
+
+# 3T CM 3x3
+cm3T3x3 <- as.table(
+  rbind(
+    c(6,10,1),
+    c(18,10,4),
+    c(6,11,13)
+  )
+)
+
+dimnames(cm3T3x3) <- list(
+  RA = c("LoS3","LoS4","LoS5"),
+  RT = c("LoS3","LoS4","LoS5")
+)
+str(cm3T3x3); cm3T3x3
+
+result.k <- Kappa(cm3T3x3, weights = "Fleiss-Cohen")
+
+confint(result.k)
+
+summary(result.k)
+# ASE = Approximate (Asymptotic) Standard Error
+
+print(result.k, CI=TRUE)
+
+cm <- cm3T3x3
+agreementplot(cm, reverse_y = T, main = NULL, newpage = F)
+cotabplot(cm, reverse_y = F, main = "Observer agreement" ,
+          newpage = F,
+          line_col = 'blue', xscale = T, yscale = T,
+          panel = cotab_agreementplot)
+
+# 3T CM 4x4
+cm3T4x4 <- as.table(
+  rbind(
+    c(1,1,0,0),
+    c(3,6,10,1),
+    c(13,18,10,4),
+    c(0,6,11,13)
+  )
+)
+
+dimnames(cm3T4x4) <- list(
+  RA = c("LoS2","LoS3","LoS4","LoS5"),
+  RT = c("LoS2","LoS3","LoS4","LoS5")
+)
+str(cm3T4x4); cm3T4x4
+
+result.k <- Kappa(cm3T4x4, weights = "Fleiss-Cohen")
+
+confint(result.k)
+
+summary(result.k)
+# ASE = Approximate (Asymptotic) Standard Error
+
+print(result.k, CI=TRUE)
+
+cm <- cm3T4x4
+agreementplot(cm, reverse_y = T, main = NULL, newpage = F)
+cotabplot(cm, reverse_y = F, main = "Observer agreement" ,
+          newpage = F,
+          line_col = 'blue', xscale = T, yscale = T,
+          panel = cotab_agreementplot)
+
 
 # https://datanovia.com/en/lessons/inter-rater-agreement-chart-in-r/
 #Black square: exact observed agreement
